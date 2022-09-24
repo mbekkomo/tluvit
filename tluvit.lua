@@ -1,6 +1,6 @@
 --[[lit-meta
   name = "UrNightmaree/tluvit"
-  version = "1.1"
+  version = "1.2"
   description = "A Teal (.tl) runner for the Luvit runtime"
   tags = { "luvit", "teal" }
   license = "MIT"
@@ -49,7 +49,7 @@ tluvit.loadtl = function(path)
   end
 
   tl.loader()
-  package.path = './deps/?.lua;./deps/?/init.lua;./?/init.lua;./?/init.tl;'..package.path
+  package.path = './deps/?.lua;./deps/?/init.lua;./?/init.lua;./?/init.tl;./deps/?.tl;./deps/?/init.tl;'..package.path
 
   local ok,err = pcall(function()
     require(path)
