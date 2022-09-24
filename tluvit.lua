@@ -1,6 +1,6 @@
 --[[lit-meta
   name = "UrNightmaree/tluvit"
-  version = "1.2"
+  version = "1.3"
   description = "A Teal (.tl) runner for the Luvit runtime"
   tags = { "luvit", "teal" }
   license = "MIT"
@@ -8,38 +8,27 @@
   homepage = "https://github.com/UrNightmaree/tluvit"
 ]]
 
+_G.lua_require = require
+_G.require = require
+module, import = require('import')(module)
+
 local HOME = os.getenv'HOME'
 
+--[[
+ A Teal (.tl) runner for Luvit runtime
+]]
 local tluvit = {}
 
 --[[
-"tluvit.loadpath" is a variable that will define the "tl" module path
+Where the module should get the "tl.lua"
 ]]
-tluvit.loadpath = ';'..HOME..'/.luarocks/share/lua/5.1/?.lua;'..HOME..'/.luarocks/share/lua/5.1/?/init.lua'
+tluvit.tlpath = ';'..HOME..'/.luarocks/share/lua/5.1/?.lua;'..HOME..'/.luarocks/share/lua/5.1/?/init.lua'
 
---[[
-<s>
-"tluvit.loadtl" is a function that'll load a .tl file
-<s>
-Example:
-<s>
-```lua
---SOF--
-local tluvit = require 'tluvit'
-<s>
-tluvit.loadtl('main') -- This will automatically translated to "main.tl"
---EOF--
-```
-]]
----@param path string path/to/script.tl
-tluvit.loadtl = function(path)
+
+local checktl = function()
   package.path = package.path..';'..tluvit.loadpath
 
-  local tl
-
-  local exist = pcall(function()
-    tl = require 'tl'
-  end)
+  local exist,tl = pcall(lua_require,'tl')
 
   if not exist then
     print '\27[1;31mCannot find "tl" module inside package.path!!\n'
@@ -48,18 +37,32 @@ tluvit.loadtl = function(path)
     os.exit(1)
   end
 
+  return tl
+end
+
+--[[
+<s>
+Load or require a .tl file. If the file returns something, this function also returnthe returned value in the .tl file.
+]]
+---@param path string? The path to .tl, defaults to "./maintl(.tl)"
+---@return any module The return of the .tl
+tluvit.loadtl = function(path)
+  path = path or 'maintl'
+
+  local tl = checktl()
   tl.loader()
+
   package.path = './deps/?.lua;./deps/?/init.lua;./?/init.lua;./?/init.tl;./deps/?.tl;./deps/?/init.tl;'..package.path
 
-  local ok,err = pcall(function()
-    require(path)
-  end)
+  local ok,mdl = pcall(lua_require,path)
 
-  if not ok and err then
+  if not ok and mdl then
     print '\27[1;31mAn error has occurred while running the .tl!\n'
     print 'The error:\27[0m'
     print('\27[37;41m'..err..'\27[0m')
     os.exit(1)
+  elseif ok and mdl then
+    return mdl
   end
 end
 
