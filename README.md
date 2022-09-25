@@ -1,3 +1,5 @@
+> This loader is mentioned in [awesome-teal](https://github.com/teal-language/awesome-teal) repository, check it out!
+
 # tluvit
 A Teal (.tl) runner for the Luvit Runtime
 
