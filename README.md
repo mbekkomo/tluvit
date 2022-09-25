@@ -66,7 +66,7 @@ tluvit.loadpath = '/usr/local/share/lua/5.4/tl.lua'
 
 tluvit.loadtl('./maintl')
 ```
-If you're using latest module (after `tluvit@1.2.0`), you need to use `tluvit.tlpath` instead using `tluvit.loadpath`'
+If you're using latest module (after `tluvit@1.2.0`), you need to use `tluvit.tlpath` instead using `tluvit.loadpath`
 ```lua
 local tluvit = require('tluvit')
 
