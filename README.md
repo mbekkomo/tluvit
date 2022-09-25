@@ -76,7 +76,7 @@ tluvit.loadtl()
 ```
 
 ### Got an error about module "import" not found
-This error is related to missing dependency on version `tluvit >= 1.3.0, < 1.3.2`, you can install `truemedian/import`.
+This error is related to missing dependency in version `tluvit >= 1.3.0, < 1.3.2`, you can install `truemedian/import`.
 ```
 lit install truemedian/import
 ```
