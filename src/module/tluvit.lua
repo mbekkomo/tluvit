@@ -1,6 +1,6 @@
 --[[lit-meta
   name = "UrNightmaree/tluvit"
-  version = "1.4"
+  version = "1.5"
   description = "A Teal (.tl) runner for the Luvit runtime"
   tags = { "luvit", "teal" }
   dependencies = {
@@ -12,10 +12,12 @@
   homepage = "https://github.com/UrNightmaree/tluvit"
 ]]
 
-local fs = require 'fs'
+package.path = package.path..';./?/init.lua'
 
 _G.require = require
 module, import = require('import')(module)
+
+local fs = require 'fs'
 
 --[[
  A Teal (.tl) runner for Luvit runtime
@@ -46,11 +48,11 @@ end
 <s>
 Load or require a .tl file. If the file returns something, this function also returnthe returned value in the .tl file.
 ]]
----@param path string? The path to .tl, defaults to "./maintl.tl"
+---@param path string? The path to .tl, defaults to "./main.tl"
+---@param notc boolean? Disable typechecking, defaults to "false"
 ---@return any module The return of the .tl
-tluvit.loadtl = function(path,mode)
-  path = path or './maintl.tl'
-  mode = mode or 'ct'
+tluvit.loadtl = function(path,notc)
+  path = path or './main.tl'
 
   if not fs.existsSync(path) then
     error('Path to the .tl is not exist!')
@@ -58,14 +60,32 @@ tluvit.loadtl = function(path,mode)
 
   local tl = checktl()
 
-  local tlfile = fs.readFileSync(path)
-  local mdl,err = tl.load(tlfile,path,mode)
+  local tlmdl
+  if not notc then
+    local tlfile = fs.readFileSync(path)
 
-  if not mdl and err then
-    error('\n\27[31;1mAn error has occured while running '..path..'\n\n'..err)
+    local mdl,err = tl.load(tlfile,'','ct')
+
+    if not mdl and err then
+      error('\n\27[31mAn error has occurred while running the .tl!\n\nThe error:\27[0m\n\27[41m'..err..'\27[0m')
+    end
+
+    tlmdl = mdl
+  else
+    path = path:gsub('%.tl$','')
+
+    tl.loader()
+
+    local ok,mdl = pcall(require,path)
+
+    if not ok and mdl then
+      error('\n\27[31mAn error has occurred while running the .tl!\n\nThe error:\27[0m\n\27[41m'..mdl..'\27[0m')
+    end
+
+    tlmdl = mdl
   end
 
-  return type(mdl) == "function" and mdl() or mdl
+  return tlmdl
 end
 
 return tluvit
