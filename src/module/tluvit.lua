@@ -1,6 +1,6 @@
 --[[lit-meta
   name = "UrNightmaree/tluvit"
-  version = "1.5"
+  version = "1.5.1"
   description = "A Teal (.tl) runner for the Luvit runtime"
   tags = { "luvit", "teal" }
   dependencies = {
@@ -60,32 +60,16 @@ tluvit.loadtl = function(path,notc)
 
   local tl = checktl()
 
-  local tlmdl
-  if not notc then
-    local tlfile = fs.readFileSync(path)
 
-    local mdl,err = tl.load(tlfile,'','ct')
+  local tlfile = fs.readFileSync(path)
 
-    if not mdl and err then
-      error('\n\27[31mAn error has occurred while running the .tl!\n\nThe error:\27[0m\n\27[41m'..err..'\27[0m')
-    end
+  local mdl,err = tl.load(tlfile,'',notc and 't' or 'ct')
 
-    tlmdl = mdl
-  else
-    path = path:gsub('%.tl$','')
-
-    tl.loader()
-
-    local ok,mdl = pcall(require,path)
-
-    if not ok and mdl then
-      error('\n\27[31mAn error has occurred while running the .tl!\n\nThe error:\27[0m\n\27[41m'..mdl..'\27[0m')
-    end
-
-    tlmdl = mdl
+  if not mdl and err then
+    error('\n\27[31mAn error has occurred while running the .tl!\n\nThe error:\27[0m\n\27[41m'..err..'\27[0m')
   end
 
-  return tlmdl
+  return mdl ~= nil and mdl() or mdl
 end
 
 return tluvit

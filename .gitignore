@@ -1,1 +1,3 @@
 src/app
+src/module/main.*
+src/module/deps
