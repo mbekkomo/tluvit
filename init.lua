@@ -1,23 +1,12 @@
---[[lit-meta
-  name = "UrNightmaree/tluvit"
-  version = "1.5.1"
-  description = "A Teal (.tl) runner for the Luvit runtime"
-  tags = { "luvit", "teal" }
-  dependencies = {
-    'truemedian/import',
-    'luvit/fs'
-  }
-  license = "MIT"
-  author = "UrNightmaree"
-  homepage = "https://github.com/UrNightmaree/tluvit"
-]]
-
-package.path = package.path..';./?/init.lua'
-
 _G.require = require
 module, import = require('import')(module)
 
 local fs = require 'fs'
+local C = require 'ansicolorsx'
+
+local function pC(...)
+	print(C(table.concat({...},'\t')))
+end
 
 --[[
  A Teal (.tl) runner for Luvit runtime
@@ -30,19 +19,22 @@ Where the module should get the "tl.lua"
 tluvit.tlpath = ''
 
 
-local checktl = function()
-  package.path = package.path..';'..tluvit.tlpath
+local function checktl()
+  package.path = package.path..(
+		tluvit.tlpath ~= '' or tluvit.tlpath:match '^%s+$' and
+		';'..tluvit.tlpath or '')
   local exist,tl = pcall(require,'tl')
 
   if not exist then
-    print '\27[1;31mCannot find "tl" module inside package.path!!\n'
-    print '"package.path" content:\27[0m'
-    print('\27[33m- '..string.gsub(package.path,';','\n- ')..'\27[0m')
+    pC([[%{red}Cannot find "tl" module inside package.path!%{reset}
+%{yellow}]]..(';'..package.path):gsub(';','\n- '))
     os.exit(1)
   end
 
   return tl
 end
+
+tluvit.api = checktl()
 
 --[[
 <s>
@@ -51,22 +43,22 @@ Load or require a .tl file. If the file returns something, this function also re
 ---@param path string? The path to .tl, defaults to "./main.tl"
 ---@param notc boolean? Disable typechecking, defaults to "false"
 ---@return any module The return of the .tl
-tluvit.loadtl = function(path,notc)
+function tluvit.loadtl(path,notc)
   path = path or './main.tl'
 
   if not fs.existsSync(path) then
     error('Path to the .tl is not exist!')
   end
 
-  local tl = checktl()
-
+  local tl = tluvit.api
 
   local tlfile = fs.readFileSync(path)
+	local filename = path:gsub('^(.-/)','') or path
 
-  local mdl,err = tl.load(tlfile,'',notc and 't' or 'ct')
+  local mdl,err = tl.load(tlfile,filename,notc and 't' or 'ct')
 
   if not mdl and err then
-    error('\n\27[31mAn error has occurred while running the .tl!\n\nThe error:\27[0m\n\27[41m'..err..'\27[0m')
+    error(C('\n%{red reverse}'..err))
   end
 
   return mdl ~= nil and mdl() or mdl
